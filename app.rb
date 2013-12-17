@@ -1,4 +1,4 @@
-require 'resque'
+#encoding: utf-8
 require 'sinatra'
 require 'tire'
 require 'yajl/json_gem'
@@ -6,11 +6,14 @@ require 'csv'
 require 'savon'
 require 'json'
 require 'dalli'
+require 'thin'
 
-dc = Dalli::Client.new('localhost:11211', {:expires_in => 1.day, :compress => true});
+dc = Dalli::Client.new('localhost:11211', {:expires_in => 24 * 3600, :compress => true});
 
-set :environment, :production
 
+set :server, %w[thin]
+set :bind, '0.0.0.0'
+set :port, 9495
 disable = '#FF0000'
 mdanghoc = '#0033FF'
 
@@ -22,9 +25,9 @@ end
 dadangky = '#009900'
 get '/checkltn/:ip/:id' do |ip, id|	 
 	msv = id.strip
-	cachedkey = 'checkltn:'+msv;
-	val = dc.get(cachedkey);
-	return val unless val == nil	
+	#cachedkey = 'checkltn:'+msv;
+	#val = dc.get(cachedkey);
+	#return val unless val == nil	
 	client = Savon.client(wsdl: "http://10.1.0.238:8082/HPUWebService.asmx?wsdl")
 	response = client.call(:ctdt_dang_ky_ltn) do		
 		message(ma_sinh_vien: msv)
@@ -177,7 +180,7 @@ get '/checkltn/:ip/:id' do |ip, id|
 			dk = false
 		end
 	end
-	dc.set(cachedkey, {"danhsach" => thieu}.to_json);
+	#dc.set(cachedkey, {"danhsach" => thieu}.to_json);
 	return {"danhsach" => thieu}.to_json
 	
 
@@ -188,9 +191,9 @@ get '/methods/?' do
 end
 get '/checktn/:ip/:id' do |ip,id|
 	msv = id.strip
-	cachedkey = 'checktn:'+msv
-	val = dc.get(cachedkey);
-	return val unless val == nil	
+	#cachedkey = 'checktn:'+msv
+	#val = dc.get(cachedkey);
+	#return val unless val == nil	
 	client = Savon.client(wsdl: "http://10.1.0.238:8082/HPUWebService.asmx?wsdl")
 	response = client.call(:ctdt_dang_ky_tttn) do		
 		message(ma_sinh_vien: msv)
@@ -371,18 +374,18 @@ get '/checktn/:ip/:id' do |ip,id|
 			dk = false
 		end
 	end
-	dc.set(cachedkey, {"danhsach" => thieu}.to_json)
+	#dc.set(cachedkey, {"danhsach" => thieu}.to_json)
 	return {"danhsach" => thieu}.to_json
 end
 
 
 get '/check/:id' do |id|
 	msv = id.strip
-	cachedkey = 'check:'+msv
-	val = dc.get(cachedkey)
-	return val unless val == nil
+	#cachedkey = 'check:'+msv
+	#val = dc.get(cachedkey)
+	#return val unless val == nil
 	client = Savon.client(wsdl: "http://10.1.0.238:8082/HPUWebService.asmx?wsdl")
-	puts client.inspect
+	#puts client.inspect
 	response = client.call(:thong_tin_sinh_vien) do		
 		message(masinhvien: msv)
 	end
@@ -435,9 +438,9 @@ danghoc = {}
 mas = 1
 
 	msv = id.strip;
-	cachedkey = 'tree:'+msv
-	val = dc.get(cachedkey)
-	return val unless val == nil
+	#cachedkey = 'tree:'+msv
+	#val = dc.get(cachedkey)
+	#return val unless val == nil
 	i = 0;
 	client = Savon.client(wsdl: "http://10.1.0.238:8082/HPUWebService.asmx?wsdl");
 	response = client.call(:mon_sinh_vien_da_qua) do
@@ -798,7 +801,7 @@ mas = 1
 	tags["nodes"] = nodes
 	tags["links"] = links
 	tags["other"] = courses3
-	dc.set(cachedkey, tags.to_json)
+	#dc.set(cachedkey, tags.to_json)
 	return tags.to_json
 end
 
