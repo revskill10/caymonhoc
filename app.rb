@@ -810,10 +810,10 @@ def ro(status, deps, item, mas)
 		return status[item]['nhom']
 	  end		 	
 		deps[item].each do |it|
-			if (status[it]) then 
+			if (status and status[it] and status[item] and status[it]['nhom'] and status[item]['nhom']) then 				
 				status[it]['nhom'] = [status[it]['nhom'],status[item]['nhom'] + 1].max				
 				tmp = ro(status, deps, it, status[it]['nhom'])		
-				mas = [tmp, mas].max
+				mas = [tmp, mas].max				
 			end
 		end	
 	return mas	

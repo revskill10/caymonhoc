@@ -24,11 +24,14 @@ class Job
   end
   
   def transform(res)
-    res.group_by {|t| [t["group"], t["mamon"]]}.map {|k,v| {:key => k, :count => v.count, :value => v}}
+    res.group_by {|t| [t["group"], t["mamon"]]}.map {|k,v| {:key => k, :count => v.count, :so_tim => v.select {|t| t["status"] == 5}, :so_vang => v.select {|t| t["status"] == 2},
+      :so_do => v.select {|t| t["status"] == 1}, :so_danghoc => v.select {|t| t["status"] == 3}, :so_daqua => v.select {|t| t["status"] == 4}, :value => v
+      }}
   end
 
   def process(ma_khoa_hoc, ma_he_dao_tao, ma_nganh)
-    keys = ["name","group","color","ma_sinh_vien","mamon","status"]
+    #keys = ["name","group","color","ma_sinh_vien","mamon","status"]
+    keys = []
     svs = load_sv(ma_khoa_hoc, ma_he_dao_tao, ma_nganh)
     return nil if svs.count == 0
     @result = []
@@ -37,7 +40,8 @@ class Job
       @result += JSON.parse(tmp)["nodes"]  
       @result.map {|t| t["ma_sinh_vien"] = sv ; t["status"] = @status[t["color"]];t}            
     end        
-    x = @result.map {|t| t.reject { |key,_| !keys.include? key }  }
-    transform(x)
+    #x = @result.map {|t| t.reject { |key,_| !keys.include? key }  }
+    transform(@result)
+    #@result
   end
 end
